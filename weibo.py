@@ -1219,11 +1219,6 @@ class Weibo(object):
                                 self.weibo_id_list.append(wb["id"])
                                 self.got_count += 1
                                 # 这里是系统日志输出，尽量别太杂
-                                logger.info(
-                                    "已获取用户 {} 的微博，内容为 {}".format(
-                                        self.user["screen_name"], wb["text"]
-                                    )
-                                )
                                 # self.print_weibo(wb)
                             else:
                                 logger.info("正在过滤转发微博")
@@ -1308,7 +1303,8 @@ class Weibo(object):
                 os.makedirs(file_dir)
             if type == "img" or type == "video":
                 return file_dir
-            file_path = file_dir + os.sep + str(self.user_config["user_id"]) + "." + type
+            #file_path = file_dir + os.sep + str(self.user_config["user_id"]) + "." + type
+            file_path = "weibo_results.csv"
             return file_path
         except Exception as e:
             logger.exception(e)
@@ -1341,10 +1337,15 @@ class Weibo(object):
     def write_csv(self, wrote_count):
         """将爬到的信息写入csv文件"""
         write_info = self.get_write_info(wrote_count)
-        result_headers = self.get_result_headers()
-        result_data = [w.values() for w in write_info]
-        file_path = self.get_filepath("csv")
-        self.csv_helper(result_headers, result_data, file_path)
+        result_txt = ''
+        for li in write_info:
+            result_txt = result_txt + self.user["screen_name"] + ':\n'
+            result_txt = result_txt + write_info[0]['created_at'] + ':\n'
+            result_txt = result_txt + write_info[0]['text'] + ':\n'
+
+        with open('test.txt', 'w') as file:
+            file.write(result_txt)
+        #self.csv_helper(result_headers, result_data, file_path)
 
     def csv_helper(self, headers, result_data, file_path):
         """将指定信息写入csv文件"""
@@ -1930,7 +1931,7 @@ class Weibo(object):
             # 用户id不可用
             if self.get_user_info() != 0:
                 return
-            logger.info("准备搜集 {} 的微博".format(self.user["screen_name"]))
+            #logger.info("准备搜集 {} 的微博".format(self.user["screen_name"]))
             if const.MODE == "append" and (
                 "first_crawler" not in self.__dict__ or self.first_crawler is False
             ):
@@ -1940,7 +1941,7 @@ class Weibo(object):
             since_date = datetime.strptime(self.user_config["since_date"], DTFORMAT)
             today = datetime.today()
             if since_date <= today:    # since_date 若为未来则无需执行
-                page_count = self.get_page_count()
+                page_count = 1
                 wrote_count = 0
                 page1 = 0
                 random_pages = random.randint(1, 5)
